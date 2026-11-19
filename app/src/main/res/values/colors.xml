@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background">#FFFBFE</color>
+    <color name="card">#FBF5FC</color>
+    <color name="text_primary">#25212B</color>
+    <color name="text_secondary">#625B6B</color>
+    <color name="accent">#6750A4</color>
+    <color name="on_accent">#FFFFFF</color>
+    <color name="price_up">#B32632</color>
+    <color name="price_down">#176B39</color>
+    <color name="divider">#E7DFEC</color>
+</resources>

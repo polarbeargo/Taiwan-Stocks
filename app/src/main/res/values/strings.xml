@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">台股行情</string>
+    <string name="market_subtitle">臺灣證券交易所 · 上市行情</string>
+    <string name="sort">排序方式</string>
+    <string name="sort_descending">依股票代號降序</string>
+    <string name="sort_ascending">依股票代號升序</string>
+    <string name="refresh">重新整理</string>
+    <string name="opening">開盤價</string>
+    <string name="closing">收盤價</string>
+    <string name="highest">最高價</string>
+    <string name="lowest">最低價</string>
+    <string name="change">漲跌價差</string>
+    <string name="monthly_average">月平均價</string>
+    <string name="transactions">成交筆數</string>
+    <string name="volume">成交股數</string>
+    <string name="value">成交金額</string>
+    <string name="pe_ratio">本益比</string>
+    <string name="dividend_yield">殖利率 (%)</string>
+    <string name="pb_ratio">股價淨值比</string>
+    <string name="close">關閉</string>
+    <string name="unavailable">—</string>
+    <string name="valuation_title">%1$s · %2$s</string>
+    <string name="valuation_note">— 表示無資料、不適用或資料日期不同。</string>
+    <string name="load_error">無法取得完整行情，請檢查網路後重試。</string>
+    <string name="refresh_error">更新失敗，目前保留上次載入的行情。</string>
+    <string name="retry">重試</string>
+    <string name="loading">正在載入臺灣證券交易所行情…</string>
+    <string name="empty">目前沒有可顯示的行情。</string>
+    <string name="market_summary">%1$d 檔證券 · 交易日 %2$s</string>
+    <string name="mixed_dates">各證券日期見卡片</string>
+    <string name="trade_date">交易日 %1$s</string>
+    <string name="price_legend">紅：高於月均／上漲　綠：低於月均／下跌</string>
+    <string name="card_description">查看 %1$s %2$s 的估值資訊</string>
+</resources>
