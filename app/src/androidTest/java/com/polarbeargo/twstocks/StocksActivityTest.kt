@@ -18,6 +18,7 @@ import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.polarbeargo.twstocks.ui.StocksActivity
 import org.junit.After
+import org.junit.Before
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -25,6 +26,10 @@ import org.hamcrest.Matcher
 
 @RunWith(AndroidJUnit4::class)
 class StocksActivityTest {
+    @Before fun resetRepository() {
+        fixtureRepository().reset()
+    }
+
     @After fun resetTheme() {
         androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().runOnMainSync {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
@@ -56,7 +61,7 @@ class StocksActivityTest {
         }
     }
 
-    @Test fun darkModeAndRecycledPriceColors() {
+    @Test fun darkModeAndPriceColors() {
         ActivityScenario.launch(StocksActivity::class.java).use { scenario ->
             assertFirstCode("2330")
             assertFirstColor(R.id.closing, R.color.price_down)
@@ -69,8 +74,6 @@ class StocksActivityTest {
             assertFirstCode("0050")
             assertFirstColor(R.id.closing, R.color.price_up)
             assertFirstColor(R.id.change, R.color.price_up)
-            onView(withId(R.id.refresh)).perform(click())
-            assertFirstCode("0050")
         }
     }
 

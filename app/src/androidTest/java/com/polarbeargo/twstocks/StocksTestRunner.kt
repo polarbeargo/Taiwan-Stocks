@@ -6,7 +6,11 @@ import androidx.test.runner.AndroidJUnitRunner
 import com.polarbeargo.twstocks.data.StockRepository
 import com.polarbeargo.twstocks.model.Stock
 import com.polarbeargo.twstocks.model.Valuation
+import kotlinx.coroutines.CompletableDeferred
+import leakcanary.AppWatcher
 import java.math.BigDecimal
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
 
 class StocksTestRunner : AndroidJUnitRunner() {
     override fun newApplication(cl: ClassLoader, className: String, context: Context): Application =
@@ -14,14 +18,43 @@ class StocksTestRunner : AndroidJUnitRunner() {
 }
 
 class FixtureApplication : StocksApplication() {
-    override val repository: StockRepository = object : StockRepository {
-        override suspend fun load(forceRefresh: Boolean): List<Stock> =
-            listOf(
-                stock("0050", "元大台灣50", "55", "50", "1.25"),
-                stock("1101", "台泥", "30", "30", "0"),
-                stock("2330", "台積電", "950", "1000", "-10"),
-            )
+    override val repository = FixtureRepository()
+
+    override fun onCreate() {
+        super.onCreate()
+        if (!AppWatcher.isInstalled) AppWatcher.manualInstall(this)
     }
+}
+
+class FixtureRepository : StockRepository {
+    data class Request(val forced: Boolean, val response: CompletableDeferred<List<Stock>>)
+
+    @Volatile var controlled = false
+    private val requests = LinkedBlockingQueue<Request>()
+
+    override suspend fun load(forceRefresh: Boolean): List<Stock> {
+        if (!controlled) return stocks
+        val request = Request(forceRefresh, CompletableDeferred())
+        requests.add(request)
+        return request.response.await()
+    }
+
+    fun nextRequest(): Request = requests.poll(5, TimeUnit.SECONDS)
+        ?: throw AssertionError("Repository was not called within five seconds")
+
+    fun reset() {
+        controlled = false
+        while (true) {
+            val request = requests.poll() ?: break
+            request.response.cancel()
+        }
+    }
+
+    val stocks = listOf(
+        stock("0050", "元大台灣50", "55", "50", "1.25"),
+        stock("1101", "台泥", "30", "30", "0"),
+        stock("2330", "台積電", "950", "1000", "-10"),
+    )
 
     private fun stock(code: String, name: String, close: String, average: String, change: String) = Stock(
         code = code,
