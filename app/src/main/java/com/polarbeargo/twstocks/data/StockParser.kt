@@ -23,9 +23,7 @@ object StockParser {
             val valuation = valuations[code]?.takeIf { sameDate(trade, it) }
             Stock(
                 code = code,
-                name = trade.getString("Name").also {
-                    if (it.isBlank()) throw MarketDataException("Missing name for $code")
-                },
+                name = trade.requiredText("Name"),
                 date = trade.text("Date"),
                 opening = trade.number("OpeningPrice"),
                 highest = trade.number("HighestPrice"),
@@ -51,12 +49,20 @@ object StockParser {
         return buildMap(array.length()) {
             for (index in 0 until array.length()) {
                 val row = array.getJSONObject(index)
-                val code = row.getString("Code")
+                val code = row.requiredText("Code")
                 if (code.isBlank() || put(code, row) != null) {
                     throw MarketDataException("Missing or duplicate security code: $code")
                 }
             }
         }
+    }
+
+    private fun JSONObject.requiredText(key: String): String {
+        val value = opt(key)
+        if (value !is String || value.isBlank()) {
+            throw MarketDataException("Missing or invalid string field: $key")
+        }
+        return value
     }
 
     private fun JSONObject.text(key: String): String? =

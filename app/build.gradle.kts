@@ -28,6 +28,10 @@ android {
         }
     }
     testOptions { animationsDisabled = true }
+    sourceSets {
+        getByName("test").java.srcDir("src/sharedTest/java")
+        getByName("androidTest").java.srcDir("src/sharedTest/java")
+    }
 }
 
 dependencies {
@@ -37,6 +41,7 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20250517")
@@ -46,4 +51,5 @@ dependencies {
     androidTestImplementation("androidx.test:runner:1.7.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
     androidTestImplementation("androidx.test.espresso:espresso-contrib:3.7.0")
+    androidTestImplementation("com.squareup.leakcanary:leakcanary-android-instrumentation:2.14")
 }
