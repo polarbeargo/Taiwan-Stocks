@@ -23,6 +23,7 @@ class StockRepositoryTest {
     private val server = MockWebServer()
     private val client = OkHttpClient.Builder().callTimeout(3, TimeUnit.SECONDS).build()
     private lateinit var repository: TwseStockRepository
+    @Volatile private var nowNanos = 0L
 
     @Before fun setup() {
         server.start()
@@ -36,7 +37,7 @@ class StockRepositoryTest {
                 },
             )
         }
-        repository = TwseStockRepository(TwseService(client, server.url("/v1/")), Dispatchers.IO)
+        repository = TwseStockRepository(TwseService(client, server.url("/v1/")), Dispatchers.IO) { nowNanos }
     }
 
     @After fun cleanup() {
@@ -60,6 +61,46 @@ class StockRepositoryTest {
         val right = async(Dispatchers.Default) { repository.load(false) }
         assertSame(left.await(), right.await())
         assertEquals(3, server.requestCount)
+    }
+
+    @Test fun `cache is valid one nanosecond before expiration`() = runBlocking {
+        val first = repository.load(false)
+        nowNanos = 59_999_999_999L
+        assertSame(first, repository.load(false))
+        assertEquals(3, server.requestCount)
+    }
+
+    @Test fun `cache expires at exactly sixty seconds`() = runBlocking {
+        val first = repository.load(false)
+        nowNanos = 60_000_000_000L
+        assertNotSame(first, repository.load(false))
+        assertEquals(6, server.requestCount)
+    }
+
+    @Test fun `cache expires after sixty seconds`() = runBlocking {
+        val first = repository.load(false)
+        nowNanos = 60_000_000_001L
+        assertNotSame(first, repository.load(false))
+        assertEquals(6, server.requestCount)
+    }
+
+    @Test fun `ttl starts at successful load completion and resets on forced refresh`() = runBlocking {
+        val original = server.dispatcher
+        server.dispatcher = object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse {
+                nowNanos = 10_000_000_000L
+                return original.dispatch(request)
+            }
+        }
+        val first = repository.load(false)
+        nowNanos = 69_999_999_999L
+        assertSame(first, repository.load(false))
+        server.dispatcher = original
+        val refreshed = repository.load(true)
+        assertEquals(6, server.requestCount)
+        nowNanos += 59_999_999_999L
+        assertSame(refreshed, repository.load(false))
+        assertEquals(6, server.requestCount)
     }
 
     @Test fun `all three endpoints are in flight before any response is needed`() = runBlocking {

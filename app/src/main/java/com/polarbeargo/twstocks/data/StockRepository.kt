@@ -15,13 +15,14 @@ interface StockRepository {
 class TwseStockRepository(
     private val service: TwseService,
     private val ioDispatcher: CoroutineDispatcher,
+    private val nanoTime: () -> Long = System::nanoTime,
 ) : StockRepository {
     private val mutex = Mutex()
     private var cached: List<Stock>? = null
     private var cachedAt = 0L
 
     override suspend fun load(forceRefresh: Boolean): List<Stock> = mutex.withLock {
-        val now = System.nanoTime()
+        val now = nanoTime()
         cached?.let {
             if (!forceRefresh && now - cachedAt < CACHE_NANOS) return@withLock it
         }
@@ -34,7 +35,7 @@ class TwseStockRepository(
             }
         }
         cached = stocks
-        cachedAt = System.nanoTime()
+        cachedAt = nanoTime()
         stocks
     }
 
